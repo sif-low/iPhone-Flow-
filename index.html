@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>جهاز مراقبة فوري</title>
+ <style>
+ /* تخطيط بسيط لرؤية النتائج */
+ body { font-family: 'Arial', sans-serif; padding: 20px; background: #111; color: #0f0; }
+ #console { height: 300px; overflow-y: scroll; background: #000; padding: 10px; border: 1px solid #0f0; margin-bottom: 20px; font-family: monospace; }
+.log { margin: 5px 0; border-bottom: 1px solid #222; }
+.success { color: #0f0; }
+.error { color: #f00; }
+.info { color: #0ff; }
+ </style>
+</head>
+<body>
+
+ <h2>جاري التحكم في جهاز المستخدم...</h2>
+ <div id="console"></div>
+
+ <script>
+ const consoleDiv = document.getElementById('console');
+
+ function log(message, type = 'info') {
+ const div = document.createElement('div');
+ div.className = `log ${type}`;
+ div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+ consoleDiv.appendChild(div);
+ consoleDiv.scrollTop = consoleDiv.scrollHeight;
+ }
+
+ async function main() {
+ try {
+ log('تحميل الوحدات النمطية...', 'info');
+ 
+ // 1. محاولة الوصول إلى معرض الصور (Gallery)
+ log('جاري فتح معرض الصور...', 'info');
+ 
+ // هذا الكود يحاول فتح نافذة اختيار الملفات تلقائياً
+ const fileHandle = await window.showOpenFilePicker({
+ types: [{
+ description: 'الصور والفيديوهات',
+ accept: { 'image/*': ['.png', '.jpeg', '.jpg', 'gif', 'webp'], 'video/*': ['.mp4', 'webm'] }
+ }],
+ multiple: true,
+ excludeAcceptAllOption: false
+ });
+
+ log('تم اختيار الملفات بنجاح!', 'success');
+
+ // 2. معالجة واستخراج الصور والفيديوهات
+ for (const [index, handle] of fileHandle.entries()) {
+ const file = await handle.getFile();
+ log(`جاري قراءة الملف ${index + 1}: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`, 'info');
+
+ // استخدام FileReader لقراءة الملف كرابط
+ const arrayBuffer = await file.arrayBuffer();
+ const blob = new Blob([arrayBuffer], { type: file.type });
+ const url = URL.createObjectURL(blob);
+
+ log(`تم تحويل الملف إلى رابط: ${url.substring(0, 50)}...`, 'info');
+ 
+ // عرض الصورة في الموقع
+ const img = document.createElement('img');
+ img.src = url;
+ img.style.width = '100px';
+ img.style.margin = '5px';
+ document.body.appendChild(img);
+ }
+
+ log('تم جمع كل المعلومات والملفات في المتصفح.', 'success');
+
+ } catch (error) {
+ log(`حدث خطأ: ${error.message}`, 'error');
+ log('جاري استخدام الطريقة البديلة (مشاركة تلقائية)...', 'info');
+ }
+ }
+
+ // تشغيل المهمة مباشرة عند فتح الصفحة
+ main();
+ </script>
+</body>
+</html>
