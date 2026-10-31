@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DualDraw - لوحة الرسم المزدوجة المباشرة</title>
+    <title>DualDraw Studio - لوحة الرسم المزدوجة المباشرة</title>
     <!-- مكتبة PeerJS للاتصال المباشر بين الأجهزة -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
@@ -11,130 +11,176 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             user-select: none;
+            -webkit-user-select: none;
         }
 
         body {
-            background-color: #121212;
+            background-color: #0b0c10;
             color: #ffffff;
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
-        /* شريط التحكم العلوي */
+        /* خلفية ديناميكية متحركة ذات طابع مستقبلي */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(0, 210, 255, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(255, 0, 127, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 50%, rgba(112, 0, 255, 0.1) 0%, transparent 60%);
+            animation: pulseBg 12s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes pulseBg {
+            0% { transform: scale(1); filter: hue-rotate(0deg); }
+            100% { transform: scale(1.1); filter: hue-rotate(45deg); }
+        }
+
+        /* شريط التحكم العلوي المتجاوب */
         header {
-            background: #1e1e1e;
-            padding: 10px 20px;
+            position: relative;
+            z-index: 10;
+            background: rgba(18, 18, 24, 0.75);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #333;
-            z-index: 10;
+            width: 100%;
         }
 
         .logo {
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #00d2ff;
-        }
-
-        .connection-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #2a2a2a;
-            padding: 6px 12px;
-            border-radius: 8px;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #ff4d4d; /* أحمر = غير متصل */
-        }
-
-        .status-dot.connected {
-            background-color: #00e676; /* أخضر = متصل */
-        }
-
-        input[type="text"] {
-            background: #121212;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            text-align: center;
-            width: 130px;
-        }
-
-        button {
-            background: #00d2ff;
-            color: #121212;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 0.85rem;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        /* شريط أدوات الرسم */
-        .toolbar {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(30, 30, 30, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 10px 20px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 10;
-        }
-
-        .color-picker {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            background: none;
-        }
-
-        .color-picker::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-
-        .color-picker::-webkit-color-swatch {
-            border: 2px solid #fff;
-            border-radius: 50%;
-        }
-
-        .range-wrap {
+            font-weight: 900;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #00d2ff, #0077ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.8rem;
         }
 
-        /* منطقة الرسم */
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.75rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #ff3b30;
+            box-shadow: 0 0 10px #ff3b30;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.connected {
+            background-color: #34c759;
+            box-shadow: 0 0 10px #34c759;
+        }
+
+        .connection-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .input-group {
+            display: flex;
+            flex: 1;
+            min-width: 140px;
+            gap: 4px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            outline: none;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        input[type="text"]:focus {
+            border-color: #00d2ff;
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.3);
+        }
+
+        button {
+            background: linear-gradient(135deg, #00d2ff, #0072ff);
+            color: #ffffff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button.btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        button.btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* حاوية اللوحة والشبكة الهندسية */
         .canvas-container {
             flex: 1;
             position: relative;
-            background: #0a0a0a;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            background-color: #0d0e15;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            overflow: hidden;
             cursor: crosshair;
         }
 
@@ -144,20 +190,124 @@
             left: 0;
             touch-action: none;
         }
+
+        /* شريط أدوات الرسم السفلي */
+        .toolbar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(18, 18, 24, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 10px 18px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 95vw;
+            overflow-x: auto;
+        }
+
+        .preset-colors {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .color-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .color-dot:hover, .color-dot.active {
+            transform: scale(1.2);
+            border-color: #fff;
+        }
+
+        .color-picker-wrapper {
+            position: relative;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+        }
+
+        .color-picker {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .tool-select {
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            outline: none;
+        }
+
+        .range-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+
+        input[type="range"] {
+            width: 70px;
+            accent-color: #00d2ff;
+            cursor: pointer;
+        }
+
+        button.btn-danger {
+            background: linear-gradient(135deg, #ff3b30, #ff2d55);
+            border-radius: 20px;
+            padding: 6px 14px;
+        }
     </style>
 </head>
 <body>
 
+    <div class="ambient-bg"></div>
+
     <header>
-        <div class="logo">DualDraw ✏️</div>
-        
-        <div class="connection-box">
-            <div class="status-dot" id="statusDot"></div>
-            <span id="statusText" style="font-size: 0.8rem;">جاري الإعداد...</span>
-            <input type="text" id="peerIdInput" placeholder="معرف الغرفة" readonly>
-            <button id="copyBtn">نسخ المعرف</button>
-            <input type="text" id="targetIdInput" placeholder="أدخل معرف الطرف الآخر">
-            <button id="connectBtn">اتصال</button>
+        <div class="header-top">
+            <div class="logo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+                DualDraw Studio
+            </div>
+            <div class="status-badge">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">غير متصل</span>
+            </div>
+        </div>
+
+        <div class="connection-controls">
+            <div class="input-group">
+                <input type="text" id="peerIdInput" placeholder="معرف غرفتك" readonly>
+                <button class="btn-secondary" id="copyBtn">نسخ</button>
+            </div>
+            <div class="input-group">
+                <input type="text" id="targetIdInput" placeholder="معرف الطرف الثاني">
+                <button id="connectBtn">اتصال</button>
+            </div>
         </div>
     </header>
 
@@ -166,14 +316,29 @@
     </div>
 
     <div class="toolbar">
-        <input type="color" id="colorPicker" class="color-picker" value="#00d2ff">
-        
-        <div class="range-wrap">
-            <label for="brushSize">الحجم:</label>
-            <input type="range" id="brushSize" min="2" max="40" value="5">
+        <div class="preset-colors">
+            <div class="color-dot active" style="background: #00d2ff;" data-color="#00d2ff"></div>
+            <div class="color-dot" style="background: #ff007f;" data-color="#ff007f"></div>
+            <div class="color-dot" style="background: #34c759;" data-color="#34c759"></div>
+            <div class="color-dot" style="background: #ffcc00;" data-color="#ffcc00"></div>
+            <div class="color-dot" style="background: #ffffff;" data-color="#ffffff"></div>
         </div>
 
-        <button id="clearBtn" style="background: #ff4d4d; color: #fff;">مسح الشاشة</button>
+        <div class="color-picker-wrapper">
+            <input type="color" id="colorPicker" class="color-picker" value="#00d2ff">
+        </div>
+
+        <select id="brushType" class="tool-select">
+            <option value="glow">✨ نيون متوهج</option>
+            <option value="normal">✏️ فرشاة عادية</option>
+            <option value="eraser">🧽 مساحة</option>
+        </select>
+
+        <div class="range-wrap">
+            <input type="range" id="brushSize" min="2" max="50" value="8">
+        </div>
+
+        <button id="clearBtn" class="btn-danger">مسح</button>
     </div>
 
     <script>
@@ -181,7 +346,9 @@
         const ctx = canvas.getContext('2d');
         const colorPicker = document.getElementById('colorPicker');
         const brushSize = document.getElementById('brushSize');
+        const brushType = document.getElementById('brushType');
         const clearBtn = document.getElementById('clearBtn');
+        const colorDots = document.querySelectorAll('.color-dot');
         
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
@@ -195,8 +362,9 @@
         let isDrawing = false;
         let lastX = 0;
         let lastY = 0;
+        let currentColor = '#00d2ff';
 
-        // ضبط أبعاد اللوحة حسب الشاشة
+        // ضبط الحجم وتناسب الأبعاد للشاشات
         function resizeCanvas() {
             const container = canvas.parentElement;
             canvas.width = container.clientWidth;
@@ -205,30 +373,42 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // إعداد PeerJS لاتصال الأجهزة من أي مكان
+        // إعداد شبكة الاتصال P2P
         function initPeer() {
             peer = new Peer();
 
             peer.on('open', (id) => {
                 peerIdInput.value = id;
-                statusText.innerText = 'جاهز للاتصال';
+                statusText.innerText = 'جاهز للربط';
             });
 
-            // استقبال الاتصال من الجهاز الثاني
             peer.on('connection', (connection) => {
                 conn = connection;
                 setupConnection();
             });
+
+            peer.on('error', (err) => {
+                statusText.innerText = 'خطأ بالاتصال';
+                console.error(err);
+            });
         }
 
-        // إعداد أحداث التفاعل عند نجاح الاتصال
         function setupConnection() {
             statusDot.classList.add('connected');
-            statusText.innerText = 'متصل الآن!';
+            statusText.innerText = 'متصل مباشر!';
 
             conn.on('data', (data) => {
                 if (data.type === 'draw') {
-                    drawOnCanvas(data.x1, data.y1, data.x2, data.y2, data.color, data.size, false);
+                    drawOnCanvas(
+                        data.x1 * canvas.width, 
+                        data.y1 * canvas.height, 
+                        data.x2 * canvas.width, 
+                        data.y2 * canvas.height, 
+                        data.color, 
+                        data.size, 
+                        data.mode, 
+                        false
+                    );
                 } else if (data.type === 'clear') {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
@@ -240,52 +420,70 @@
             });
         }
 
-        // الاتصال بجهاز آخر عن طريق الـ ID
         connectBtn.addEventListener('click', () => {
             const targetId = targetIdInput.value.trim();
             if (targetId) {
+                statusText.innerText = 'جاري الاتصال...';
                 conn = peer.connect(targetId);
                 setupConnection();
             }
         });
 
-        // نسخ الـ ID للمشاركة
         copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(peerIdInput.value);
-            alert('تم نسخ معرف الغرفة! أرسله للطرف الثاني للاتصال.');
+            if (peerIdInput.value) {
+                navigator.clipboard.writeText(peerIdInput.value);
+                copyBtn.innerText = 'تم!';
+                setTimeout(() => copyBtn.innerText = 'نسخ', 2000);
+            }
         });
 
-        // وظيفة الرسم
-        function drawOnCanvas(x1, y1, x2, y2, color, size, emit = true) {
+        // دوال الرسم والفرش المتطورة
+        function drawOnCanvas(x1, y1, x2, y2, color, size, mode, emit = true) {
             ctx.beginPath();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = size;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
-            ctx.stroke();
 
-            // إرسال بيانات الرسم للطرف الآخر فوراً
+            if (mode === 'eraser') {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.lineWidth = size * 2;
+                ctx.stroke();
+                ctx.globalCompositeOperation = 'source-over';
+            } else if (mode === 'glow') {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = size;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.shadowBlur = size * 2.5;
+                ctx.shadowColor = color;
+                ctx.stroke();
+                // إزالة التوهج للحفاظ على سلاسة الأداء
+                ctx.shadowBlur = 0;
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = size;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.shadowBlur = 0;
+                ctx.stroke();
+            }
+
             if (emit && conn && conn.open) {
                 conn.send({
                     type: 'draw',
-                    x1: x1 / canvas.width,  // إرسال نسب مئوية لضمان التوافق مع اختلاف أحجام الشاشات
+                    x1: x1 / canvas.width,
                     y1: y1 / canvas.height,
                     x2: x2 / canvas.width,
                     y2: y2 / canvas.height,
                     color: color,
-                    size: size
+                    size: size,
+                    mode: mode
                 });
             }
         }
 
-        // استقبال الإحداثيات والتحويل التناسبي للشاشة المحلية
-        function handleDrawFromPeer(x1, y1, x2, y2, color, size) {
-            drawOnCanvas(x1 * canvas.width, y1 * canvas.height, x2 * canvas.width, y2 * canvas.height, color, size, false);
-        }
-
-        // أحداث الماوس واللمس
+        // التعامل مع اللمس والماوس
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -306,7 +504,7 @@
         function draw(e) {
             if (!isDrawing) return;
             const pos = getPos(e);
-            drawOnCanvas(lastX, lastY, pos.x, pos.y, colorPicker.value, brushSize.value, true);
+            drawOnCanvas(lastX, lastY, pos.x, pos.y, currentColor, brushSize.value, brushType.value, true);
             lastX = pos.x;
             lastY = pos.y;
         }
@@ -323,7 +521,23 @@
         canvas.addEventListener('touchmove', draw);
         canvas.addEventListener('touchend', stopDrawing);
 
-        // مسح اللوحة
+        // أدوات الألوان والمحي
+        colorDots.forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                colorDots.forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+                currentColor = dot.dataset.color;
+                colorPicker.value = currentColor;
+                if(brushType.value === 'eraser') brushType.value = 'glow';
+            });
+        });
+
+        colorPicker.addEventListener('input', (e) => {
+            currentColor = e.target.value;
+            colorDots.forEach(d => d.classList.remove('active'));
+            if(brushType.value === 'eraser') brushType.value = 'glow';
+        });
+
         clearBtn.addEventListener('click', () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (conn && conn.open) {
@@ -331,7 +545,7 @@
             }
         });
 
-        // تشغيل الاتصال
+        // تشغيل التطبيق
         initPeer();
     </script>
 </body>
